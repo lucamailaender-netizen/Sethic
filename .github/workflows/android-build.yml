@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - main
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,10 +20,12 @@ jobs:
           java-version: '17'
 
       - name: Build APK
-        run: chmod +x gradlew && ./gradlew assembleDebug
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: meine-app.apk
+          name: meine-app
           path: app/build/outputs/apk/debug/app-debug.apk
