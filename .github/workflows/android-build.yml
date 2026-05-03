@@ -17,7 +17,7 @@ jobs:
           node-version: '20'
 
       - name: Install Capacitor Core & Plugins
-        # Wir installieren alles im Hauptverzeichnis, damit 'android/..' Pfade funktionieren
+        # Erstellt die notwendige Umgebung für die Android-App
         run: |
           npm init -y
           npm install @capacitor/core@latest @capacitor/android@latest @capacitor/preferences@latest
@@ -30,16 +30,11 @@ jobs:
           cache: 'gradle'
 
       - name: Build APK
-        # Wir wechseln direkt in den android-ordner für den Build
         working-directory: ./android
         run: |
-          if [ -f "gradlew" ]; then
-            chmod +x gradlew
-            ./gradlew assembleDebug
-          else
-            # Falls gradlew fehlt, nutzen wir das System-Gradle
-            gradle assembleDebug
-          fi
+          # Wir ignorieren die beschädigte gradlew-Datei komplett
+          # Wir nutzen direkt 'gradle' vom System
+          gradle assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
