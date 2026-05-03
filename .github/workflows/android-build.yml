@@ -19,26 +19,24 @@ jobs:
 
       - name: Build APK
         run: |
-          # Sucht die gradlew Datei im gesamten Repo
-          GRADLEW_PATH=$(find . -name gradlew | head -n 1)
+          # Wir suchen den Android-Ordner
+          ANDROID_DIR=$(find . -name build.gradle -exec dirname {} + | grep "/android$" | head -n 1)
           
-          if [ -z "$GRADLEW_PATH" ]; then
-            echo "FEHLER: Die Datei 'gradlew' wurde nirgendwo gefunden!"
-            echo "Bitte lade dein gesamtes Projekt (inklusive aller Ordner) hoch."
-            ls -R
+          if [ -z "$ANDROID_DIR" ]; then
+            ANDROID_DIR=$(find . -name build.gradle -exec dirname {} + | head -n 1)
+          fi
+
+          if [ -z "$ANDROID_DIR" ]; then
+            echo "FEHLER: Kein Android-Projekt (build.gradle) gefunden!"
             exit 1
           fi
-          
-          # Wechselt in das Verzeichnis, wo gradlew liegt
-          cd "$(dirname "$GRADLEW_PATH")"
-          chmod +x gradlew
-          
-          # Startet den Build-Vorgang
-          ./gradlew assembleDebug
+
+          cd "$ANDROID_DIR"
+          # Wir nutzen 'gradle' direkt vom System statt './gradlew'
+          gradle assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: sethic-app
-          # Sucht die APK automatisch, egal in welchem Unterordner sie liegt
           path: "**/*.apk"
