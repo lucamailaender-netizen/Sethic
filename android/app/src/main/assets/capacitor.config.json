@@ -1,0 +1,8 @@
+{
+	"appId": "com.vaultflow",
+	"appName": "VaultFlow AI",
+	"webDir": "dist",
+	"server": {
+		"androidScheme": "https"
+	}
+}
