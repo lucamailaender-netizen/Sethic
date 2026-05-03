@@ -16,32 +16,30 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Capacitor Dependencies
+      - name: Install Capacitor Core & Plugins
+        # Wir installieren alles im Hauptverzeichnis, damit 'android/..' Pfade funktionieren
         run: |
-          # Wir korrigieren die Pfade von ../node_modules zu ./node_modules
-          if [ -f "capacitor.settings.gradle" ]; then
-            sed -i 's/\.\.\/node_modules/\.\/node_modules/g' capacitor.settings.gradle
-          fi
-          # Wir installieren die fehlenden Plugins direkt auf dem Server
           npm init -y
-          npm install @capacitor/android@latest @capacitor/preferences@latest @capacitor/core@latest
+          npm install @capacitor/core@latest @capacitor/android@latest @capacitor/preferences@latest
 
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
+          cache: 'gradle'
 
       - name: Build APK
+        # Wir wechseln direkt in den android-ordner für den Build
+        working-directory: ./android
         run: |
-          # Wir suchen build.gradle um sicher zu sein wo wir sind
-          ANDROID_DIR=$(find . -name build.gradle -exec dirname {} + | grep "/android$" | head -n 1)
-          if [ -z "$ANDROID_DIR" ]; then ANDROID_DIR=$(find . -name build.gradle -exec dirname {} + | head -n 1); fi
-          
-          cd "$ANDROID_DIR"
-          chmod +x gradlew || true
-          # Wir nutzen das System-Gradle für maximale Kompatibilität
-          gradle assembleDebug
+          if [ -f "gradlew" ]; then
+            chmod +x gradlew
+            ./gradlew assembleDebug
+          else
+            # Falls gradlew fehlt, nutzen wir das System-Gradle
+            gradle assembleDebug
+          fi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
