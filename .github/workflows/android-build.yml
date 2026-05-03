@@ -19,16 +19,26 @@ jobs:
 
       - name: Build APK
         run: |
-          if [ -f "gradlew" ]; then
-            chmod +x gradlew
-            ./gradlew assembleDebug
-          else
-            echo "FEHLER: gradlew Datei wurde im Hauptverzeichnis nicht gefunden!"
+          # Sucht die gradlew Datei im gesamten Repo
+          GRADLEW_PATH=$(find . -name gradlew | head -n 1)
+          
+          if [ -z "$GRADLEW_PATH" ]; then
+            echo "FEHLER: Die Datei 'gradlew' wurde nirgendwo gefunden!"
+            echo "Bitte lade dein gesamtes Projekt (inklusive aller Ordner) hoch."
+            ls -R
             exit 1
           fi
+          
+          # Wechselt in das Verzeichnis, wo gradlew liegt
+          cd "$(dirname "$GRADLEW_PATH")"
+          chmod +x gradlew
+          
+          # Startet den Build-Vorgang
+          ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: sethic-app
-          path: app/build/outputs/apk/debug/app-debug.apk
+          # Sucht die APK automatisch, egal in welchem Unterordner sie liegt
+          path: "**/*.apk"
