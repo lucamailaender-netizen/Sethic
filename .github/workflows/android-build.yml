@@ -11,6 +11,21 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Capacitor Dependencies
+        run: |
+          # Wir korrigieren die Pfade von ../node_modules zu ./node_modules
+          if [ -f "capacitor.settings.gradle" ]; then
+            sed -i 's/\.\.\/node_modules/\.\/node_modules/g' capacitor.settings.gradle
+          fi
+          # Wir installieren die fehlenden Plugins direkt auf dem Server
+          npm init -y
+          npm install @capacitor/android@latest @capacitor/preferences@latest @capacitor/core@latest
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -19,20 +34,13 @@ jobs:
 
       - name: Build APK
         run: |
-          # Wir suchen den Android-Ordner
+          # Wir suchen build.gradle um sicher zu sein wo wir sind
           ANDROID_DIR=$(find . -name build.gradle -exec dirname {} + | grep "/android$" | head -n 1)
+          if [ -z "$ANDROID_DIR" ]; then ANDROID_DIR=$(find . -name build.gradle -exec dirname {} + | head -n 1); fi
           
-          if [ -z "$ANDROID_DIR" ]; then
-            ANDROID_DIR=$(find . -name build.gradle -exec dirname {} + | head -n 1)
-          fi
-
-          if [ -z "$ANDROID_DIR" ]; then
-            echo "FEHLER: Kein Android-Projekt (build.gradle) gefunden!"
-            exit 1
-          fi
-
           cd "$ANDROID_DIR"
-          # Wir nutzen 'gradle' direkt vom System statt './gradlew'
+          chmod +x gradlew || true
+          # Wir nutzen das System-Gradle für maximale Kompatibilität
           gradle assembleDebug
 
       - name: Upload APK
