@@ -3,8 +3,6 @@ on:
   push:
     branches:
       - main
-env:
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
 jobs:
   build:
@@ -20,11 +18,15 @@ jobs:
           java-version: '17'
 
       - name: Build APK
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug
 
       - name: Upload APK
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
         uses: actions/upload-artifact@v4
         with:
           name: meine-app
