@@ -16,12 +16,16 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
-          cache: 'gradle'
 
       - name: Build APK
         run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug
+          if [ -f "gradlew" ]; then
+            chmod +x gradlew
+            ./gradlew assembleDebug
+          else
+            echo "FEHLER: gradlew Datei wurde im Hauptverzeichnis nicht gefunden!"
+            exit 1
+          fi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
